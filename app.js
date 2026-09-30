@@ -279,8 +279,8 @@ $("#qClear").onclick=()=>{ state.q=""; $("#q").value=""; $("#qClear").hidden=tru
 /* ---------- boot ---------- */
 render();
 setTimeout(maybeInstall,1500);
-fetch("videos.json",{cache:"no-cache"}).then(r=>r.json()).then(d=>{
-  state.videos=(d.videos||[]).map(v=>({...v,_id:v.id}));
+Promise.all([fetch("videos.json",{cache:"no-cache"}).then(r=>r.json()),fetch("links.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([d,extra])=>{
+  state.videos=(d.videos||[]).map(v=>({...v,...(extra[v.id]||{}),_id:v.id}));
   state.loaded=true; render();
   const s=d.social||{}, links=[["youtube","▶ YouTube"],["tiktok","♪ TikTok"],["instagram","◎ Instagram"]].filter(([k])=>s[k]);
   $("#social").innerHTML = links.map(([k,l])=>`<a class="btn small" href="${esc(s[k])}" target="_blank" rel="noopener">${l}</a>`).join("");

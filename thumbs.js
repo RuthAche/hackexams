@@ -31,8 +31,8 @@
       if (mini) { mini.classList.add("has-img"); mini.style.backgroundImage = `url(${src})`; }
     });
   };
-  fetch("videos.json", { cache: "no-cache" }).then(r => r.json()).then(d => {
-    (d.videos || []).forEach(v => map[v.id] = v); apply();
+  Promise.all([fetch("videos.json", { cache: "no-cache" }).then(r => r.json()), fetch("links.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([d, links]) => {
+    (d.videos || []).forEach(v => map[v.id] = { ...v, ...(links[v.id] || {}) }); apply();
     new MutationObserver(apply).observe(document.getElementById("app"), { childList: true, subtree: true });
   }).catch(() => {});
 })();
