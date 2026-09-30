@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hack the GCSEs · Hack Exams</title>
+<meta name="description" content="Short GCSE revision videos with quick quizzes. Pick your exam board and subject, watch, and test yourself in minutes.">
+<link rel="canonical" href="https://hackexams.co.uk/">
+<meta name="theme-color" content="#E54B6B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hack Exams">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hack Exams">
+<meta property="og:title" content="Hack the GCSEs">
+<meta property="og:description" content="Short videos. Quick quizzes. Exam-ready in minutes.">
+<meta property="og:url" content="https://hackexams.co.uk/">
+<meta property="og:image" content="https://hackexams.co.uk/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo" viewBox="0 0 200 200">
+      <g transform="rotate(-6 100 100)">
+        <rect x="14" y="30" width="172" height="140" rx="26" fill="#1E1A2B"/>
+        <rect x="10" y="24" width="172" height="140" rx="26" fill="#E54B6B" stroke="#1E1A2B" stroke-width="6"/>
+        <!-- terminal dots -->
+        <circle cx="34" cy="46" r="6" fill="#FFD23F" stroke="#1E1A2B" stroke-width="3"/>
+        <circle cx="52" cy="46" r="6" fill="#3BAA5C" stroke="#1E1A2B" stroke-width="3"/>
+        <circle cx="70" cy="46" r="6" fill="#3B7DDD" stroke="#1E1A2B" stroke-width="3"/>
+        <text x="96" y="104" text-anchor="middle" font-family="Luckiest Guy, Arial Black, Impact, sans-serif" font-size="54" fill="#FFFFFF" stroke="#1E1A2B" stroke-width="3" paint-order="stroke" letter-spacing="2">HACK</text>
+        <text x="96" y="148" text-anchor="middle" font-family="Luckiest Guy, Arial Black, Impact, sans-serif" font-size="30" fill="#FFD23F" stroke="#1E1A2B" stroke-width="3" paint-order="stroke" letter-spacing="1">THE GCSEs</text>
+      </g>
+      <!-- lightning bolt sticker -->
+      <g transform="translate(150 6) rotate(14)">
+        <path d="M18 0 L2 30 H16 L8 56 L36 20 H22 L30 0 Z" fill="#FFD23F" stroke="#1E1A2B" stroke-width="4" stroke-linejoin="round"/>
+      </g>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#1E1A2B"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <button class="brand" id="homeBtn" aria-label="Hack the GCSEs home">
+      <svg><use href="#logo"/></svg>
+      <div class="word">HACK<span>THE GCSEs</span></div>
+    </button>
+    <div class="search">
+      <svg><use href="#i-search"/></svg>
+      <input id="q" type="search" placeholder="Search videos, topics, key words… e.g. femur, EPOC, levers" autocomplete="off" aria-label="Search">
+      <button class="clear" id="qClear" hidden aria-label="Clear search">×</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app"><p class="loading">Loading…</p></main>
+
+<footer class="wrap foot">
+  <span>© 2026 Hack Exams · hackexams.co.uk</span>
+  <span class="social" id="social"></span>
+</footer>
+
+<!-- player -->
+<div class="overlay" id="playerOv" hidden>
+  <div class="sheet player" role="dialog" aria-modal="true" aria-labelledby="pTitle" id="playerSheet"></div>
+</div>
+
+<div id="installSlot"></div>
+<div id="toastSlot"></div>
+<script src="app.js"></script>
+</body>
+</html>
