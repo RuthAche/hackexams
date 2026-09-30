@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Manage videos · Hack Exams</title>
+<link rel="icon" href="icons/favicon.png" type="image/png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+main{padding-block:24px 80px}
+h1{font-family:var(--display);font-weight:400;font-size:40px;margin:0}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:16px;margin-top:16px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 6px;font-size:18px}
+textarea{width:100%;min-height:110px;border:2px solid var(--ink);border-radius:10px;padding:10px;font:14px/1.4 ui-monospace,Menlo,monospace;background:var(--card);color:var(--ink)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{border-bottom:1.5px solid var(--line);padding:6px;text-align:left;vertical-align:middle}
+td input{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--ink);font-size:13px}
+td input.ok{border-color:var(--green)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.filters select{border:2px solid var(--ink);border-radius:10px;padding:6px 10px;background:var(--card)}
+.bar{position:sticky;bottom:0;background:var(--paper);padding:12px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:2px solid var(--line);margin-top:16px}
+ol{margin:6px 0 0;padding-left:20px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Manage videos</h1>
+  <p class="hint">This page saves nothing online by itself. Add your links, press <b>Download videos.json</b>, then upload that file to GitHub (steps at the bottom). The site updates about a minute later.</p>
+
+  <div class="card">
+    <h2>Quick paste</h2>
+    <p class="hint">Paste one video per line: the code, then any YouTube or TikTok links. Example: <code>P1-01 https://youtube.com/shorts/abc123XYZ90 https://www.tiktok.com/@hackexams/video/123</code></p>
+    <div class="filters"><select id="pBoard"></select><select id="pSubject"></select></div>
+    <textarea id="paste" placeholder="P1-01 https://youtube.com/shorts/…&#10;P1-02 https://youtube.com/shorts/…"></textarea>
+    <div style="margin-top:8px"><button class="btn yellow small" id="applyPaste">Apply links</button> <span class="hint" id="pasteMsg"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>Channel links (shown in the footer)</h2>
+    <div class="row3">
+      <label class="f">YouTube channel<input id="sYt" placeholder="https://youtube.com/@hackexams"></label>
+      <label class="f">TikTok profile<input id="sTk" placeholder="https://tiktok.com/@hackexams"></label>
+      <label class="f">Instagram<input id="sIg" placeholder="https://instagram.com/hackexams"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>All videos</h2>
+    <div class="filters"><select id="fBoard"></select><select id="fSubject"></select></div>
+    <div class="tbl"><table><thead><tr><th>Code</th><th>Title</th><th>YouTube Shorts link</th><th>TikTok link</th><th>Video file path (optional)</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>Add a new video</h2>
+    <div class="row3">
+      <label class="f">Exam board<select id="nBoard"></select></label>
+      <label class="f">Subject<select id="nSubject"></select></label>
+      <label class="f">Paper / unit<input id="nPaper" value="Paper 1"></label>
+    </div>
+    <div class="row3" style="margin-top:10px">
+      <label class="f">Code<input id="nCode" placeholder="P2-01"></label>
+      <label class="f">Spec ref<input id="nSpec" placeholder="3.2.1"></label>
+      <label class="f">Topic section<input id="nSec" placeholder="3.2.1 Sports psychology"></label>
+    </div>
+    <label class="f" style="margin-top:10px">Title<input id="nTitle"></label>
+    <label class="f" style="margin-top:10px">Key words for search<input id="nKw"></label>
+    <label class="f" style="margin-top:10px">Quiz (one per line: question | answer)<textarea id="nQuiz" style="min-height:70px"></textarea></label>
+    <div style="margin-top:10px"><button class="btn small" id="addNew">Add video</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Publishing your changes</h2>
+    <ol>
+      <li>Press <b>Download videos.json</b> below.</li>
+      <li>Open <a href="https://github.com/RuthAche/hackexams/upload/main" target="_blank" rel="noopener">your site's GitHub upload page</a>.</li>
+      <li>Drag the downloaded <b>videos.json</b> in and press <b>Commit changes</b>.</li>
+    </ol>
+  </div>
+
+  <div class="bar"><button class="btn primary" id="dl">Download videos.json</button><span class="hint" id="count"></span></div>
+</main>
+<div id="toastSlot"></div>
+<script>
+(() => {
+const BOARDS={aqa:"AQA",edexcel:"Pearson Edexcel",ocr:"OCR",eduqas:"WJEC Eduqas",ccea:"CCEA"};
+const SUBJ={"english-lang":"English Language","english-lit":"English Literature",maths:"Maths","combined-science":"Combined Science",biology:"Biology",chemistry:"Chemistry",physics:"Physics",pe:"Physical Education","computer-science":"Computer Science",history:"History",geography:"Geography","religious-studies":"Religious Studies",business:"Business",psychology:"Psychology",sociology:"Sociology",media:"Media Studies",citizenship:"Citizenship",statistics:"Statistics",food:"Food Prep & Nutrition",french:"French",spanish:"Spanish",german:"German",art:"Art & Design",dt:"Design & Technology",drama:"Drama",music:"Music",dance:"Dance"};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const opts=(o,sel)=>Object.entries(o).map(([k,v])=>`<option value="${k}"${k===sel?" selected":""}>${esc(v)}</option>`).join("");
+let data={videos:[],social:{}};
+function toast(m){ $("#toastSlot").innerHTML=`<div class="toast">${esc(m)}</div>`; setTimeout(()=>$("#toastSlot").innerHTML="",2500); }
+["#pBoard","#nBoard"].forEach(s=>$(s).innerHTML=opts(BOARDS,"aqa"));
+["#pSubject","#nSubject"].forEach(s=>$(s).innerHTML=opts(SUBJ,"pe"));
+$("#fBoard").innerHTML='<option value="">All boards</option>'+opts(BOARDS);
+$("#fSubject").innerHTML='<option value="">All subjects</option>'+opts(SUBJ);
+function draw(){
+  const b=$("#fBoard").value, s=$("#fSubject").value;
+  const list=data.videos.filter(v=>(!b||v.board===b)&&(!s||v.subject===s));
+  $("#rows").innerHTML=list.map(v=>`<tr data-id="${esc(v.id)}"><td><b>${esc(v.code||"")}</b><br><small>${esc(BOARDS[v.board]||v.board)} · ${esc(SUBJ[v.subject]||v.subject)}</small></td><td>${esc(v.title)}</td>
+    <td><input data-f="youtube" value="${esc(v.youtube||"")}" class="${v.youtube?"ok":""}"></td><td><input data-f="tiktok" value="${esc(v.tiktok||"")}" class="${v.tiktok?"ok":""}"></td><td><input data-f="file" value="${esc(v.file||"")}" placeholder="videos/${esc(v.code||"")}.mp4"></td></tr>`).join("");
+  const ready=data.videos.filter(v=>v.youtube||v.tiktok||v.file).length;
+  $("#count").textContent=`${ready} of ${data.videos.length} videos have a link`;
+}
+$("#rows").addEventListener("change",e=>{ const i=e.target; const id=i.closest("tr").dataset.id; const v=data.videos.find(x=>x.id===id); v[i.dataset.f]=i.value.trim()||null; i.className=i.value.trim()?"ok":""; draw(); });
+["#fBoard","#fSubject"].forEach(s=>$(s).addEventListener("change",draw));
+["#sYt","#sTk","#sIg"].forEach((s,i)=>$(s).addEventListener("change",e=>{ data.social[["youtube","tiktok","instagram"][i]]=e.target.value.trim()||null; }));
+$("#applyPaste").onclick=()=>{
+  const b=$("#pBoard").value, s=$("#pSubject").value; let n=0, miss=[];
+  $("#paste").value.split(/\n+/).forEach(line=>{
+    const m=line.match(/P\s*(\d+)\s*-\s*(\d+)/i); if(!m) return;
+    const code=`P${m[1]}-${String(+m[2]).padStart(2,"0")}`;
+    const v=data.videos.find(x=>x.board===b&&x.subject===s&&x.code===code); if(!v){ miss.push(code); return; }
+    (line.match(/https?:\/\/\S+/g)||[]).forEach(u=>{ if(/youtu/i.test(u)) v.youtube=u; else if(/tiktok/i.test(u)) v.tiktok=u; }); n++;
+  });
+  $("#pasteMsg").textContent=`${n} updated${miss.length?` · not found: ${miss.join(", ")}`:""}`; draw();
+};
+$("#addNew").onclick=()=>{
+  const title=$("#nTitle").value.trim(); if(!title){ toast("Add a title first"); return; }
+  const board=$("#nBoard").value, subject=$("#nSubject").value, code=$("#nCode").value.trim().toUpperCase();
+  const id=`${board}-${subject}-${(code||title).toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
+  if(data.videos.some(v=>v.id===id)){ toast("That code already exists for this subject"); return; }
+  const num=(code.match(/-(\d+)$/)||[])[1];
+  data.videos.push({id,board,subject,paper:$("#nPaper").value.trim()||"Videos",number:num?+num:null,code,spec:$("#nSpec").value.trim(),title,section:$("#nSec").value.trim(),keywords:$("#nKw").value.trim(),mnemonic:"",
+    quiz:$("#nQuiz").value.split("\n").map(l=>l.split("|")).filter(p=>p.length>1).map(([q,a])=>({q:q.trim(),a:a.trim()})),order:num?100+ +num:900,youtube:null,tiktok:null,file:null});
+  ["#nCode","#nSpec","#nTitle","#nKw","#nQuiz"].forEach(s=>$(s).value=""); toast("Added. Remember to download."); draw();
+};
+$("#dl").onclick=()=>{
+  data.updated=new Date().toISOString().slice(0,10);
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="videos.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+fetch("videos.json",{cache:"no-cache"}).then(r=>r.json()).then(d=>{ data=d; data.social ||= {}; $("#sYt").value=data.social.youtube||""; $("#sTk").value=data.social.tiktok||""; $("#sIg").value=data.social.instagram||""; draw(); });
+})();
+</script>
+</body>
+</html>
