@@ -1,0 +1,24 @@
+/* Front page: subject cards (exam board shown as a subtitle) */
+.home-subjects{margin-bottom:30px}
+.scards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px;padding-top:8px;max-width:920px}
+.scard{position:relative;text-align:left;border:2.5px solid var(--ink);border-radius:18px;padding:18px;background:var(--card);box-shadow:0 4px 0 var(--ink);display:grid;grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;align-items:center;min-height:128px;transition:transform .1s}
+.scard:hover{transform:translateY(-2px) rotate(-.4deg)}
+.scard .ic{grid-column:1;grid-row:1 / 4;width:64px;height:64px;border-radius:16px;background:var(--c);border:2.5px solid var(--ink);display:grid;place-items:center;font-size:34px;line-height:1;color:#fff;font-family:var(--display)}
+.scard .nm,.scard .st,.scard .meta{grid-column:2}
+.scard .nm{font-family:var(--display);font-size:26px;line-height:1;letter-spacing:.5px;padding-top:4px}
+.scard .st{font-size:14px;font-weight:600;color:var(--muted)}
+.scard .meta{font-size:13px;color:var(--muted)}
+.scard .meta b{color:var(--ink)}
+.scard .new{position:absolute;top:-11px;right:14px;font-size:11px;font-weight:700;letter-spacing:1px;background:var(--pink);color:#fff;border:2px solid var(--ink);border-radius:999px;padding:1px 8px}
+.more{font-size:14px;color:var(--muted);margin:16px 0 0}
+.more a{color:var(--blue);font-weight:600}
+.hero p{max-width:40ch}
+.hero .max{font-family:var(--display);color:var(--pink);letter-spacing:1px;background:var(--hl);padding:0 4px;border-radius:4px}
+.subjhead .subt{margin:6px 0 0;font-weight:600;color:var(--muted)}
+
+/* Video cards: same width in every column, even with long titles */
+.vcard{min-width:0;width:100%}
+.vcard .thumb{width:100%}
+.thumb .tt{overflow-wrap:anywhere;hyphens:auto}
+.vcard .cap>span:first-child{min-width:0;overflow-wrap:break-word}
+.vcard .cap>span:last-child{flex:none}

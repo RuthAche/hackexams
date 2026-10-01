@@ -1,4 +1,4 @@
-// "Latest uploads" strip on the front page: every video with a YouTube link, in series order (1, 2, 3 …).
+// "Latest uploads" strip on the front page, under the subject cards: every video with a YouTube link, in series order (1, 2, 3 …).
 (() => {
   const ytId = u => { const m = String(u || "").match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -22,8 +22,8 @@
   document.head.appendChild(css);
   let items = [];
   const build = () => {
-    const hero = document.querySelector("#app .hero");
-    if (!hero || document.querySelector("#app .latest") || !items.length) return;
+    const anchor = document.querySelector("#app .home-subjects");
+    if (!anchor || document.querySelector("#app .latest") || !items.length) return;
     const fresh = items.some(v => Date.now() - new Date(v.added) < 7 * 864e5);
     const cards = items.map(v => {
       const id = ytId(v.youtube);
@@ -36,7 +36,7 @@
         <span class="meta"><b>${esc(v.title)}</b><br>${esc(BOARD[v.board] || v.board)} ${esc(SUBJ[v.subject] || v.subject)} · ${ago(v.added)}</span>
       </button>`;
     }).join("");
-    hero.insertAdjacentHTML("afterend", `<section class="latest" aria-labelledby="latestT">
+    anchor.insertAdjacentHTML("afterend", `<section class="latest" aria-labelledby="latestT">
       <div class="latest-head"><h2 class="sec" id="latestT">Latest uploads${fresh ? '<span class="new">NEW</span>' : ""}</h2>
       <button class="btn small" data-jump="${esc(items[0].subject)}" data-jboard="${esc(items[0].board)}">See all ${esc(BOARD[items[0].board] || "")} ${esc(SUBJ[items[0].subject] || "")} videos →</button></div>
       <div class="latest-row">${cards}</div></section>`);

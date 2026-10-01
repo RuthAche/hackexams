@@ -16,7 +16,9 @@ const SUBJECTS = [
   ["art","Art & Design","Creative"],["dt","Design & Technology","Creative"],["drama","Drama","Creative"],["music","Music","Creative"],["dance","Dance","Creative"]
 ].map(([id,name,group])=>({id,name,group}));
 const PALETTE = ["var(--blue)","var(--pink)","var(--green)","var(--orange)","var(--purple)","var(--teal)"];
-const subjColor = id => PALETTE[Math.abs([...id].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7))%6];
+const SUBJ_C = {biology:"var(--green)", pe:"var(--blue)", chemistry:"var(--orange)", physics:"var(--purple)", maths:"var(--pink)", "combined-science":"var(--teal)"};
+const SUBJ_ICON = {biology:"🧬", pe:"🏃", chemistry:"⚗️", physics:"⚛️", maths:"➗", "combined-science":"🔬", "english-lang":"✍️", "english-lit":"📚", history:"🏛️", geography:"🌍", "computer-science":"💻", psychology:"🧠", business:"📈", "health-social-care":"🩺"};
+const subjColor = id => SUBJ_C[id] || PALETTE[Math.abs([...id].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7))%6];
 const mono = n => n.replace(/&/g,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 const boardById = id => BOARDS.find(b=>b.id===id);
 const subjById = id => SUBJECTS.find(s=>s.id===id) || {id, name:id, group:"Other"};
@@ -26,7 +28,7 @@ const $ = s => document.querySelector(s);
 
 const store = (k,v) => { try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){ return null; } };
 
-const state = { view:"boards", board:store("htg-board")||null, subject:null, q:"", scope:"all", videos:[], loaded:false, dbOk:true, canEdit:false };
+const state = { view:"home", social:{}, board:store("htg-board")||null, subject:null, q:"", scope:"all", videos:[], loaded:false, dbOk:true, canEdit:false };
 
 /* ---------- data ---------- */
 const colorFor = v => PALETTE[((v.number||0)+5)%6];
@@ -82,52 +84,48 @@ function hitWords(v,toks){
 
 /* ---------- render ---------- */
 function crumbs(){
-  const parts=[`<button data-go="boards">Exam boards</button>`];
-  if(state.board && state.view!=="boards") parts.push(`<span>›</span>`, state.view==="subjects"?`<span>${esc(boardById(state.board).full)}</span>`:`<button data-go="subjects">${esc(boardById(state.board).full)}</button>`);
-  if(state.view==="subject") parts.push(`<span>›</span><span>${esc(subjById(state.subject).name)}</span>`);
-  return `<nav class="crumbs" aria-label="Breadcrumb">${parts.join("")}</nav>`;
+  return `<nav class="crumbs" aria-label="Breadcrumb"><button data-go="home">All subjects</button><span>›</span><span>${esc(subjById(state.subject).name)}</span></nav>`;
 }
-function stepsHTML(n){ return `<div class="steps"><span class="step ${n===1?"on":""}">1 · Exam board</span><span class="step ${n===2?"on":""}">2 · Subject</span><span class="step ${n===3?"on":""}">3 · Watch & quiz</span></div>`; }
+function stepsHTML(n){ return `<div class="steps"><span class="step ${n===1?"on":""}">1 · Pick a subject</span><span class="step ${n===2?"on":""}">2 · Watch & quiz</span></div>`; }
+const qualOf = vids => (vids.find(v=>v.qual)||{}).qual || "GCSE";
+const papersLabel = vids => { const ps=[...new Set(vids.map(v=>v.paper).filter(Boolean))].sort(); return ps.length>1 ? "Papers "+ps.map(p=>p.replace(/^Paper\s*/i,"")).join(" & ") : (ps[0]||""); };
+const boardLine = (boardId, vids) => [ (boardById(boardId)?.full||boardId)+" "+qualOf(vids), papersLabel(vids) ].filter(Boolean).join(" · ");
 
-function renderBoards(){
-  const total = state.videos.length;
+function homeGroups(){
+  const g = {};
+  state.videos.forEach(v=>{ const k=v.board+"|"+v.subject; (g[k] ||= {board:v.board, subject:v.subject, vids:[]}).vids.push(v); });
+  return Object.values(g).map(x=>({...x, latest:Math.max(0,...x.vids.map(v=>Date.parse(v.added)||0))}))
+    .sort((a,b)=> b.latest-a.latest || subjById(a.subject).name.localeCompare(subjById(b.subject).name));
+}
+
+function renderHome(){
+  const groups = homeGroups(), total = state.videos.length;
+  const week = 7*864e5;
+  const cards = groups.map(g=>{ const s=subjById(g.subject), n=g.vids.length, r=g.vids.filter(isReady).length;
+    const fresh = g.latest && Date.now()-g.latest < week;
+    return `<button class="scard" data-subject="${esc(g.subject)}" data-sboard="${esc(g.board)}" style="--c:${subjColor(g.subject)}">
+      ${fresh?`<span class="new">NEW</span>`:""}
+      <span class="ic" aria-hidden="true">${SUBJ_ICON[g.subject]||esc(mono(s.name))}</span>
+      <span class="nm">${esc(s.name)}</span>
+      <span class="st">${esc(boardLine(g.board,g.vids))}</span>
+      <span class="meta"><b>${n}</b> video${n===1?"":"s"}${r<n?` · ${r} ready`:""} · quiz with every one</span>
+    </button>`; }).join("");
+  const tt = state.social.tiktok;
   return `
   <section class="hero">
     <svg class="logo" viewBox="0 0 200 200" role="img" aria-label="Hack the GCSEs logo"><use href="#logo"/></svg>
     <div>
       <h1>HACK <span class="the">THE</span> GCSEs</h1>
-      <p>Short videos. Quick quizzes. Exam-ready in minutes, not hours.</p>
+      <p>Short videos. Quick quizzes. Make the <span class="max">MAX</span> of your time.</p>
       ${stepsHTML(1)}
     </div>
   </section>
-  <h2 class="sec">Which exam board are you doing?</h2>
-  <p class="sub">Not sure? It's printed on your past papers, or ask your teacher. ${total?`<b>${total}</b> videos so far.`:""}</p>
-  <div class="boards">
-    ${BOARDS.map(b=>{const n=countFor(b.id); const subs=new Set(state.videos.filter(v=>v.board===b.id).map(v=>v.subject)).size;
-      return `<button class="board" data-board="${b.id}" style="--c:${b.c}">
-        <span class="tag">${b.tag}</span><span class="full">${esc(b.full)}</span>
-        <span class="meta">${n?`<b>${n}</b> video${n>1?"s":""} · ${subs} subject${subs>1?"s":""}`:"Videos coming soon"}</span>
-      </button>`}).join("")}
-  </div>`;
-}
-
-function renderSubjects(){
-  const b = boardById(state.board);
-  const groups = {};
-  SUBJECTS.forEach(s=>{ (groups[s.group] ||= []).push(s); });
-  // extra subjects created via upload
-  new Set(state.videos.filter(v=>v.board===b.id).map(v=>v.subject)).forEach(id=>{ if(!SUBJECTS.find(s=>s.id===id)) (groups.Other ||= []).push(subjById(id)); });
-  const withVids = SUBJECTS.filter(s=>countFor(b.id,s.id));
-  const tile = s => { const n=countFor(b.id,s.id), r=readyFor(b.id,s.id);
-    return `<button class="subj ${n?"has":"empty"}" data-subject="${s.id}" style="--c:${subjColor(s.id)}">
-      <span class="mono">${esc(mono(s.name))}</span>
-      <span><span class="nm">${esc(s.name)}</span><br><span class="ct">${n? (r===n?`${n} videos`:`${r} of ${n} ready`) :"Coming soon"}</span></span>
-    </button>`; };
-  return `${crumbs()}
-  <h2 class="sec">${esc(b.full)}: pick your subject</h2>
-  ${stepsHTML(2)}
-  ${withVids.length?`<div class="grouphead">Ready to watch</div><div class="subjects">${withVids.map(tile).join("")}</div>`:""}
-  ${Object.entries(groups).map(([g,list])=>`<div class="grouphead">${esc(g)}</div><div class="subjects">${list.map(tile).join("")}</div>`).join("")}`;
+  <section class="home-subjects" aria-labelledby="subjT">
+    <h2 class="sec" id="subjT">Pick your subject</h2>
+    <p class="sub">${total?`<b>${total}</b> videos so far, each with a quick quiz.`:"Videos on the way."}</p>
+    ${groups.length?`<div class="scards">${cards}</div>`:""}
+    <p class="more">More subjects on the way.${tt?` <a href="${esc(tt)}" target="_blank" rel="noopener">Follow @hackexams on TikTok</a> to see them first.`:""}</p>
+  </section>`;
 }
 
 function vcard(v){
@@ -149,10 +147,10 @@ function renderSubject(){
   vids.forEach(v=>{ const p=v.paper||"Videos"; const sec=v.section||"Videos"; ((papers[p] ||= {})[sec] ||= []).push(v); });
   return `${crumbs()}
   <div class="subjhead">
-    <div><span class="pill">${esc(b.tag)}</span> <span class="pill">${vids.length} video${vids.length===1?"":"s"}</span><h2>${esc(s.name)}</h2></div>
+    <div><h2>${esc(s.name)}</h2><p class="subt">${esc(boardLine(b.id,vids))} · ${vids.length} video${vids.length===1?"":"s"}</p></div>
     <button class="btn small" id="shareSubj">Share this subject</button>
   </div>
-  ${stepsHTML(3)}
+  ${stepsHTML(2)}
   ${vids.length? Object.entries(papers).map(([p,secs])=>`
     <div class="grouphead">${esc(p)}</div>
     ${Object.entries(secs).map(([sec,list])=>`<div class="section-h"><h3>${esc(sec)}</h3><span class="ln"></span></div><div class="vgrid">${list.map(vcard).join("")}</div>`).join("")}
@@ -163,10 +161,9 @@ function renderSearch(){
   const res = search(state.q);
   const toks = norm(state.q).split(/[^a-z0-9%.]+/).filter(Boolean);
   const subjHits = SUBJECTS.filter(s=>toks.length && toks.every(t=>norm(s.name).includes(t)));
-  const scopeBtns = state.board ? `<div class="scope" role="group" aria-label="Search in">
+  const scopeBtns = (state.view==="subject" && state.subject) ? `<div class="scope" role="group" aria-label="Search in">
       <button data-scope="all" aria-pressed="${state.scope==="all"}">Everywhere</button>
-      <button data-scope="board" aria-pressed="${state.scope==="board"}">${esc(boardById(state.board).tag)} only</button>
-      ${state.subject?`<button data-scope="subject" aria-pressed="${state.scope==="subject"}">${esc(subjById(state.subject).name)} only</button>`:""}
+      <button data-scope="subject" aria-pressed="${state.scope==="subject"}">${esc(subjById(state.subject).name)} only</button>
     </div>`:"";
   return `
   <h2 class="sec">Results for “${esc(state.q)}”</h2>
@@ -184,20 +181,19 @@ function renderSearch(){
         <span class="pill">${isReady(v)?"Watch":"Soon"}</span>
       </button>`}).join("")}
   </div>
-  ${!res.length?`<div class="empty-note"><b>Nothing yet</b>Try a single key word like <i>femur</i>, <i>lactic</i> or a spec code like <i>3.1.2</i>.</div>`:""}`;
+  ${!res.length?`<div class="empty-note"><b>Nothing yet</b>Try a single key word like <i>osmosis</i>, <i>mitosis</i> or <i>femur</i>.</div>`:""}`;
 }
 
 function render(){
   const app=$("#app");
   if(state.q.trim()) app.innerHTML = renderSearch();
   else if(state.view==="subject" && state.board && state.subject) app.innerHTML = renderSubject();
-  else if(state.view==="subjects" && state.board) app.innerHTML = renderSubjects();
-  else { state.view="boards"; app.innerHTML = renderBoards(); }
+  else { state.view="home"; app.innerHTML = renderHome(); }
   if(!state.loaded && state.dbOk) app.insertAdjacentHTML("beforeend",`<p class="loading">Loading the video library…</p>`);
   if(!state.dbOk) app.insertAdjacentHTML("beforeend",`<div class="empty-note" style="margin-top:20px"><b>Library offline</b>Couldn't load the video list. Check your connection and refresh.</div>`);
 }
 
-function go(view){ state.view=view; state.q=""; $("#q").value=""; $("#qClear").hidden=true; render(); window.scrollTo({top:0}); }
+function go(view){ state.view=view; if(view==="home") state.scope="all"; state.q=""; $("#q").value=""; $("#qClear").hidden=true; render(); window.scrollTo({top:0}); }
 
 /* ---------- player ---------- */
 let currentVid=null;
@@ -259,17 +255,16 @@ let tt; function toast(m){ $("#toastSlot").innerHTML=`<div class="toast" role="s
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-board],[data-subject],[data-vid],[data-go],[data-close],[data-reveal],[data-scope],[data-jump],#homeBtn,#shareVid,#shareSubj");
+  const t=e.target.closest("[data-subject],[data-vid],[data-go],[data-close],[data-reveal],[data-scope],[data-jump],#homeBtn,#shareVid,#shareSubj");
   if(!t) { if(e.target.classList.contains("overlay")){ if(e.target.id==="playerOv") closePlayer(); else e.target.hidden=true; } return; }
-  if(t.dataset.board){ state.board=t.dataset.board; store("htg-board",state.board); go("subjects"); }
-  else if(t.dataset.subject){ state.subject=t.dataset.subject; go("subject"); }
+  if(t.dataset.subject){ state.subject=t.dataset.subject; if(t.dataset.sboard){ state.board=t.dataset.sboard; store("htg-board",state.board); } go("subject"); }
   else if(t.dataset.vid){ openPlayer(t.dataset.vid); }
   else if(t.dataset.go){ go(t.dataset.go); }
   else if(t.dataset.close){ if(t.dataset.close==="playerOv") closePlayer(); else $("#"+t.dataset.close).hidden=true; }
   else if(t.dataset.reveal!==undefined){ t.hidden=true; t.nextElementSibling.hidden=false; }
   else if(t.dataset.scope){ state.scope=t.dataset.scope; render(); }
   else if(t.dataset.jump){ const sj=t.dataset.jump; state.subject=sj; state.board = t.dataset.jboard || (countFor(state.board,sj) ? state.board : (state.videos.find(v=>v.subject===sj)||{}).board) || "aqa"; store("htg-board",state.board); go("subject"); }
-  else if(t.id==="homeBtn"){ go("boards"); }
+  else if(t.id==="homeBtn"){ go("home"); }
   else if(t.id==="shareVid"){ copy(location.origin+location.pathname+"#"+currentVid.id); }
   else if(t.id==="shareSubj"){ const first=state.videos.find(v=>inScope(v,state.board,state.subject)); copy(location.origin+location.pathname+(first?"#"+first.id:"")); }
 });
@@ -281,8 +276,8 @@ render();
 setTimeout(maybeInstall,1500);
 Promise.all([fetch("videos.json",{cache:"no-cache"}).then(r=>r.json()),fetch("links.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([d,extra])=>{
   state.videos=(d.videos||[]).map(v=>({...v,...(extra[v.id]||{}),_id:v.id}));
-  state.loaded=true; render();
-  const s=d.social||{}, links=[["youtube","▶ YouTube"],["tiktok","♪ TikTok"],["instagram","◎ Instagram"]].filter(([k])=>s[k]);
+  state.social=d.social||{}; state.loaded=true; render();
+  const s=state.social, links=[["youtube","▶ YouTube"],["tiktok","♪ TikTok"],["instagram","◎ Instagram"]].filter(([k])=>s[k]);
   $("#social").innerHTML = links.map(([k,l])=>`<a class="btn small" href="${esc(s[k])}" target="_blank" rel="noopener">${l}</a>`).join("");
   const h=location.hash.slice(1); if(h){ const v=state.videos.find(x=>x.id===h); if(v){ state.board=v.board; state.subject=v.subject; state.view="subject"; render(); openPlayer(v.id);} }
 }).catch(()=>{ state.dbOk=false; render(); });
