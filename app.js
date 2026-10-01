@@ -268,7 +268,7 @@ document.addEventListener("click",e=>{
   else if(t.dataset.close){ if(t.dataset.close==="playerOv") closePlayer(); else $("#"+t.dataset.close).hidden=true; }
   else if(t.dataset.reveal!==undefined){ t.hidden=true; t.nextElementSibling.hidden=false; }
   else if(t.dataset.scope){ state.scope=t.dataset.scope; render(); }
-  else if(t.dataset.jump){ state.subject=t.dataset.jump; state.board ||= "aqa"; go("subject"); }
+  else if(t.dataset.jump){ const sj=t.dataset.jump; state.subject=sj; state.board = t.dataset.jboard || (countFor(state.board,sj) ? state.board : (state.videos.find(v=>v.subject===sj)||{}).board) || "aqa"; store("htg-board",state.board); go("subject"); }
   else if(t.id==="homeBtn"){ go("boards"); }
   else if(t.id==="shareVid"){ copy(location.origin+location.pathname+"#"+currentVid.id); }
   else if(t.id==="shareSubj"){ const first=state.videos.find(v=>inScope(v,state.board,state.subject)); copy(location.origin+location.pathname+(first?"#"+first.id:"")); }

@@ -2,7 +2,7 @@
 (() => {
   const ytId = u => { const m = String(u || "").match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const SUBJ = { pe: "PE" }, BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA" };
+  const SUBJ = { pe: "Physical Education", biology: "Biology" }, BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA" };
   const ago = iso => {
     const day = t => { const x = new Date(t); return Date.UTC(x.getFullYear(), x.getMonth(), x.getDate()); };
     const d = Math.round((day(Date.now()) - day(iso)) / 864e5);
@@ -38,7 +38,7 @@
     }).join("");
     hero.insertAdjacentHTML("afterend", `<section class="latest" aria-labelledby="latestT">
       <div class="latest-head"><h2 class="sec" id="latestT">Latest uploads${fresh ? '<span class="new">NEW</span>' : ""}</h2>
-      <button class="btn small" data-jump="${esc(items[0].subject)}">See all ${esc(SUBJ[items[0].subject] || "")} videos →</button></div>
+      <button class="btn small" data-jump="${esc(items[0].subject)}" data-jboard="${esc(items[0].board)}">See all ${esc(BOARD[items[0].board] || "")} ${esc(SUBJ[items[0].subject] || "")} videos →</button></div>
       <div class="latest-row">${cards}</div></section>`);
   };
   Promise.all([fetch("videos.json", { cache: "no-cache" }).then(r => r.json()), fetch("links.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([d, links]) => {
