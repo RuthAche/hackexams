@@ -1,4 +1,4 @@
-// "Latest uploads" strip on the front page, newest first, from the "added" dates in links.json.
+// "Latest uploads" strip on the front page: every video with a YouTube link, in series order (1, 2, 3 …).
 (() => {
   const ytId = u => { const m = String(u || "").match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -24,8 +24,8 @@
   const build = () => {
     const hero = document.querySelector("#app .hero");
     if (!hero || document.querySelector("#app .latest") || !items.length) return;
-    const fresh = Date.now() - new Date(items[0].added) < 7 * 864e5;
-    const cards = items.slice(0, 10).map(v => {
+    const fresh = items.some(v => Date.now() - new Date(v.added) < 7 * 864e5);
+    const cards = items.map(v => {
       const id = ytId(v.youtube);
       return `<button class="vcard" data-vid="${esc(v.id)}" data-thumbed="1">
         <div class="thumb has-img" style="--c:var(--blue)">
@@ -42,7 +42,7 @@
       <div class="latest-row">${cards}</div></section>`);
   };
   Promise.all([fetch("videos.json", { cache: "no-cache" }).then(r => r.json()), fetch("links.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([d, links]) => {
-    items = (d.videos || []).map(v => ({ ...v, ...(links[v.id] || {}) })).filter(v => v.added && ytId(v.youtube)).sort((a, b) => b.added.localeCompare(a.added));
+    items = (d.videos || []).map(v => ({ ...v, ...(links[v.id] || {}) })).filter(v => v.added && ytId(v.youtube)).sort((a, b) => (a.paper || "").localeCompare(b.paper || "") || (a.order ?? 999) - (b.order ?? 999) || (a.number ?? 999) - (b.number ?? 999));
     build();
     new MutationObserver(build).observe(document.getElementById("app"), { childList: true });
   }).catch(() => {});
