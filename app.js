@@ -4,19 +4,20 @@ const BOARDS = [
   {id:"edexcel", tag:"EDEXCEL", full:"Pearson Edexcel", c:"var(--blue)"},
   {id:"ocr", tag:"OCR", full:"OCR", c:"var(--green)"},
   {id:"eduqas", tag:"EDUQAS", full:"WJEC Eduqas", c:"var(--purple)"},
-  {id:"ccea", tag:"CCEA", full:"CCEA (N. Ireland)", c:"var(--teal)"}
+  {id:"ccea", tag:"CCEA", full:"CCEA (N. Ireland)", c:"var(--teal)"},
+  {id:"btec", tag:"BTEC", full:"Pearson BTEC", c:"var(--orange)"}
 ];
 const SUBJECTS = [
   ["english-lang","English Language","Core"],["english-lit","English Literature","Core"],["maths","Maths","Core"],
   ["combined-science","Combined Science","Core"],["biology","Biology","Sciences"],["chemistry","Chemistry","Sciences"],["physics","Physics","Sciences"],
   ["pe","Physical Education","Options"],["computer-science","Computer Science","Options"],["history","History","Options"],["geography","Geography","Options"],
   ["religious-studies","Religious Studies","Options"],["business","Business","Options"],["psychology","Psychology","Options"],["sociology","Sociology","Options"],
-  ["media","Media Studies","Options"],["citizenship","Citizenship","Options"],["statistics","Statistics","Options"],["food","Food Prep & Nutrition","Options"],
+  ["media","Media Studies","Options"],["citizenship","Citizenship","Options"],["statistics","Statistics","Options"],["food","Food Prep & Nutrition","Options"],["health-social-care","Health & Social Care","Options"],
   ["french","French","Languages"],["spanish","Spanish","Languages"],["german","German","Languages"],
   ["art","Art & Design","Creative"],["dt","Design & Technology","Creative"],["drama","Drama","Creative"],["music","Music","Creative"],["dance","Dance","Creative"]
 ].map(([id,name,group])=>({id,name,group}));
 const PALETTE = ["var(--blue)","var(--pink)","var(--green)","var(--orange)","var(--purple)","var(--teal)"];
-const SUBJ_C = {biology:"var(--green)", pe:"var(--blue)", chemistry:"var(--orange)", physics:"var(--purple)", maths:"var(--pink)", "combined-science":"var(--teal)"};
+const SUBJ_C = {biology:"var(--green)", pe:"var(--blue)", "health-social-care":"var(--pink)", chemistry:"var(--orange)", physics:"var(--purple)", maths:"var(--pink)", "combined-science":"var(--teal)"};
 const SUBJ_ICON = {biology:"🧬", pe:"🏃", chemistry:"⚗️", physics:"⚛️", maths:"➗", "combined-science":"🔬", "english-lang":"✍️", "english-lit":"📚", history:"🏛️", geography:"🌍", "computer-science":"💻", psychology:"🧠", business:"📈", "health-social-care":"🩺"};
 const subjColor = id => SUBJ_C[id] || PALETTE[Math.abs([...id].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7))%6];
 const mono = n => n.replace(/&/g,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
