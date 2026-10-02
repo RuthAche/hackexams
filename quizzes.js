@@ -56,6 +56,7 @@ button.step.quizgo{background:var(--pink);color:#fff}
 .qz .miss li{margin-bottom:6px}
 .qz .miss span{color:var(--green);font-family:var(--hand);font-size:19px}`;
   document.head.appendChild(css);
+  document.body.insertAdjacentHTML("beforeend", `<div class="overlay" id="quizOv" hidden><div class="sheet qz" role="dialog" aria-modal="true" aria-labelledby="qzTitle" id="quizSheet"></div></div>`);
 
   let vids = [];
   const subjectsOf = () => {
@@ -78,6 +79,8 @@ button.step.quizgo{background:var(--pink);color:#fff}
     const anchor = document.querySelector("#app .home-subjects");
     const old = document.querySelector("#app .quizzes");
     if (!anchor || !vids.length) { return; }
+    const steps = document.querySelector("#app .hero .steps");
+    if (steps && !steps.dataset.q) { steps.dataset.q = "1"; steps.innerHTML = `<button class="step on" data-quizjump="subjT">1 · Pick a subject ↓</button><button class="step quizgo" data-quizjump="quizT">2 · Take a quiz ↓</button>`; }
     const groups = subjectsOf();
     if (!groups.find(g => g.key === tab)) tab = groups[0].key;
     const g = groups.find(x => x.key === tab);
