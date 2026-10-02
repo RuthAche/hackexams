@@ -4,10 +4,10 @@
 (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ytId = u => { const m = String(u || "").match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; };
-  const SUBJ = { pe: "Physical Education", biology: "Biology" };
-  const ICON = { pe: "🏃", biology: "🧬" };
-  const COL = { pe: "var(--blue)", biology: "var(--green)" };
-  const BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA" };
+  const SUBJ = { pe: "Physical Education", biology: "Biology", "health-social-care": "Health & Social Care" };
+  const ICON = { pe: "🏃", biology: "🧬", "health-social-care": "🩺" };
+  const COL = { pe: "var(--blue)", biology: "var(--green)", "health-social-care": "var(--pink)" };
+  const BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA", btec: "BTEC" };
   const MIX = 10;
   const $ = s => document.querySelector(s);
   const store = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "null"); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } };
@@ -69,7 +69,7 @@ button.step.quizgo{background:var(--pink);color:#fff}
   const tile = v => {
     const b = best[v.id], n = v.quiz.length;
     return `<button class="qtile" data-quiz="${esc(v.id)}" style="--c:${COL[v.subject] || "var(--purple)"}" aria-label="Quiz for video ${esc(v.code)}: ${esc(v.title)}">
-      <span class="cd">${esc(v.code || "").replace(/^P(\d)-/, "P$1<br>")}</span>
+      <span class="cd">${esc(v.code || "").replace(/^([A-Z]\d)-/, "$1<br>")}</span>
       <span class="nm">${esc(v.title)}<small>Video ${esc(v.code || "")} · ${n} question${n === 1 ? "" : "s"}</small></span>
       <span class="sc ${b != null && b === n ? "done" : ""}">${b != null ? `${b}/${n}` : "Start"}</span>
     </button>`;
