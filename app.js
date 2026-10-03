@@ -5,7 +5,8 @@ const BOARDS = [
   {id:"ocr", tag:"OCR", full:"OCR", c:"var(--green)"},
   {id:"eduqas", tag:"EDUQAS", full:"WJEC Eduqas", c:"var(--purple)"},
   {id:"ccea", tag:"CCEA", full:"CCEA (N. Ireland)", c:"var(--teal)"},
-  {id:"btec", tag:"BTEC", full:"Pearson BTEC", c:"var(--orange)"}
+  {id:"btec", tag:"BTEC", full:"Pearson BTEC", c:"var(--orange)"},
+  {id:"lc", tag:"LEAVING CERT", full:"Leaving Cert", c:"var(--teal)"}
 ];
 const SUBJECTS = [
   ["english-lang","English Language","Core"],["english-lit","English Literature","Core"],["maths","Maths","Core"],
@@ -14,11 +15,12 @@ const SUBJECTS = [
   ["religious-studies","Religious Studies","Options"],["business","Business","Options"],["psychology","Psychology","Options"],["sociology","Sociology","Options"],
   ["media","Media Studies","Options"],["citizenship","Citizenship","Options"],["statistics","Statistics","Options"],["food","Food Prep & Nutrition","Options"],["health-social-care","Health & Social Care","Options"],
   ["french","French","Languages"],["spanish","Spanish","Languages"],["german","German","Languages"],
-  ["art","Art & Design","Creative"],["dt","Design & Technology","Creative"],["drama","Drama","Creative"],["music","Music","Creative"],["dance","Dance","Creative"]
+  ["art","Art & Design","Creative"],["dt","Design & Technology","Creative"],["drama","Drama","Creative"],["music","Music","Creative"],["dance","Dance","Creative"],
+  ["lc-english","English","Leaving Cert (Ireland)"]
 ].map(([id,name,group])=>({id,name,group}));
 const PALETTE = ["var(--blue)","var(--pink)","var(--green)","var(--orange)","var(--purple)","var(--teal)"];
-const SUBJ_C = {biology:"var(--green)", pe:"var(--blue)", "health-social-care":"var(--pink)", chemistry:"var(--orange)", physics:"var(--purple)", maths:"var(--pink)", "combined-science":"var(--teal)"};
-const SUBJ_ICON = {biology:"🧬", pe:"🏃", chemistry:"⚗️", physics:"⚛️", maths:"➗", "combined-science":"🔬", "english-lang":"✍️", "english-lit":"📚", history:"🏛️", geography:"🌍", "computer-science":"💻", psychology:"🧠", business:"📈", "health-social-care":"🩺"};
+const SUBJ_C = {biology:"var(--green)", pe:"var(--blue)", "health-social-care":"var(--pink)", "lc-english":"var(--teal)", chemistry:"var(--orange)", physics:"var(--purple)", maths:"var(--pink)", "combined-science":"var(--teal)"};
+const SUBJ_ICON = {biology:"🧬", pe:"🏃", chemistry:"⚗️", physics:"⚛️", maths:"➗", "combined-science":"🔬", "english-lang":"✍️", "english-lit":"📚", history:"🏛️", geography:"🌍", "computer-science":"💻", psychology:"🧠", business:"📈", "health-social-care":"🩺", "lc-english":"📖"};
 const subjColor = id => SUBJ_C[id] || PALETTE[Math.abs([...id].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7))%6];
 const mono = n => n.replace(/&/g,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 const boardById = id => BOARDS.find(b=>b.id===id);
@@ -109,7 +111,7 @@ function renderHome(){
       <span class="ic" aria-hidden="true">${SUBJ_ICON[g.subject]||esc(mono(s.name))}</span>
       <span class="nm">${esc(s.name)}</span>
       <span class="st">${esc(boardLine(g.board,g.vids))}</span>
-      <span class="meta"><b>${n}</b> video${n===1?"":"s"}${r<n?` · ${r} ready`:""} · quiz with every one</span>
+      <span class="meta"><b>${n}</b> video${n===1?"":"s"}${r<n?` · ${r} ready`:""}${(q=>q===n?" · quiz with every one":q?` · ${q} quiz${q===1?"":"zes"}`:"")(g.vids.filter(v=>(v.quiz||[]).length).length)}</span>
     </button>`; }).join("");
   const tt = state.social.tiktok;
   return `
@@ -123,7 +125,7 @@ function renderHome(){
   </section>
   <section class="home-subjects" aria-labelledby="subjT">
     <h2 class="sec" id="subjT">Pick your subject</h2>
-    <p class="sub">${total?`<b>${total}</b> videos so far, each with a quick quiz.`:"Videos on the way."}</p>
+    <p class="sub">${total?`<b>${total}</b> videos so far, with quick quizzes.`:"Videos on the way."}</p>
     ${groups.length?`<div class="scards">${cards}</div>`:""}
     <p class="more">More subjects on the way.${tt?` <a href="${esc(tt)}" target="_blank" rel="noopener">Follow @hackexams on TikTok</a> to see them first.`:""}</p>
   </section>`;
@@ -205,7 +207,7 @@ function openPlayer(id){
   const yt=ytId(v.youtube);
   const box = yt ? `<div class="vidbox"><iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0&playsinline=1&modestbranding=1" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe></div>`
     : src ? `<div class="vidbox"><video controls playsinline autoplay preload="metadata" src="${esc(src)}"></video></div>`
-    : `<div class="vidbox none" style="--c:${colorFor(v)}"><div><div style="font-family:var(--display);font-size:28px;line-height:1">${esc(v.title)}</div><p>${(v.tiktok||v.link)?"Watch this one on TikTok.":"Video coming soon. Try the quiz below!"}</p>${(v.tiktok||v.link)?`<a class="btn yellow" href="${esc(v.tiktok||v.link)}" target="_blank" rel="noopener">Watch it ↗</a>`:""}</div></div>`;
+    : `<div class="vidbox none" style="--c:${colorFor(v)}"><div><div style="font-family:var(--display);font-size:28px;line-height:1">${esc(v.title)}</div><p>${(v.tiktok||v.link)?"Watch this one on TikTok.":((v.quiz||[]).length?"Video coming soon. Try the quiz below!":"Video coming soon.")}</p>${(v.tiktok||v.link)?`<a class="btn yellow" href="${esc(v.tiktok||v.link)}" target="_blank" rel="noopener">Watch it ↗</a>`:""}</div></div>`;
   const kws = String(v.keywords||"").split(/\s+/).filter(w=>w.length>3).slice(0,14);
   $("#playerSheet").innerHTML = `
     ${box}

@@ -2,7 +2,7 @@
 (() => {
   const ytId = u => { const m = String(u || "").match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const SUBJ = { pe: "Physical Education", biology: "Biology", "health-social-care": "Health & Social Care" }, BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA", btec: "BTEC" };
+  const SUBJ = { pe: "Physical Education", biology: "Biology", "health-social-care": "Health & Social Care", "lc-english": "English" }, BOARD = { aqa: "AQA", edexcel: "Edexcel", ocr: "OCR", eduqas: "Eduqas", ccea: "CCEA", btec: "BTEC", lc: "Leaving Cert" };
   const ago = iso => {
     const day = t => { const x = new Date(t); return Date.UTC(x.getFullYear(), x.getMonth(), x.getDate()); };
     const d = Math.round((day(Date.now()) - day(iso)) / 864e5);
